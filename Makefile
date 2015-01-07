@@ -32,7 +32,7 @@ LINKER = kernel.ld
 OBJECTS := $(patsubst $(SOURCE)%.s,$(BUILD)%.o,$(wildcard $(SOURCE)*.s))
 
 # Rule to make everything.
-all: $(TARGET) $(LIST)
+all: $(TARGET) $(LIST) rootfs
 
 # Rule to remake everything. Does not include clean.
 rebuild: all
@@ -55,6 +55,11 @@ $(BUILD)%.o: $(SOURCE)%.s $(BUILD)
 
 $(BUILD):
 	mkdir $@
+
+.PHONY: rootfs
+rootfs: $(TARGET) $(LIST)
+	cp $(TARGET) boot/kernel.img
+	
 
 # Rule to clean files.
 clean : 

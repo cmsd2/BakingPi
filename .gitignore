@@ -3,3 +3,4 @@ kernel.list
 kernel.map
 build
 *.swp
+.DS_Store
