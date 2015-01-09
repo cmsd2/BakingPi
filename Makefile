@@ -5,9 +5,17 @@
 #	A makefile script for generation of raspberry pi kernel images.
 ###############################################################################
 
-# The toolchain to use. arm-none-eabi works, but there does exist 
+# The toolchain to use. arm-none-eabi works, but there does exist
 # arm-bcm2708-linux-gnueabi.
+TOOLSET ?= /usr/local/cross/arm
+TOOLSET_BIN ?= $(TOOLSET)/bin
 ARMGNU ?= arm-none-eabi
+GCC_PREFIX = $(ARMGNU)-
+OBJDUMP ?= $(TOOLSET_BIN)/$(GCC_PREFIX)objdump
+OBJCOPY ?= $(TOOLSET_BIN)/$(GCC_PREFIX)objcopy
+LINKER ?= $(TOOLSET_BIN)/$(GCC_PREFIX)ld
+ASSEMBLER ?= $(TOOLSET_BIN)/$(GCC_PREFIX)as
+CC ?= $(TOOLSET_BIN)/$(GCC_PREFIX)gcc
 
 # The intermediate directory for compiled object files.
 BUILD = build/
@@ -25,9 +33,9 @@ LIST = kernel.list
 MAP = kernel.map
 
 # The name of the linker script to use.
-LINKER = kernel.ld
+LINKER_SCRIPT = kernel.ld
 
-# The names of all object files that must be generated. Deduced from the 
+# The names of all object files that must be generated. Deduced from the
 # assembly code files in source.
 OBJECTS := $(patsubst $(SOURCE)%.s,$(BUILD)%.o,$(wildcard $(SOURCE)*.s))
 
@@ -39,19 +47,19 @@ rebuild: all
 
 # Rule to make the listing file.
 $(LIST) : $(BUILD)output.elf
-	$(ARMGNU)-objdump -d $(BUILD)output.elf > $(LIST)
+	$(OBJDUMP) -d $(BUILD)output.elf > $(LIST)
 
 # Rule to make the image file.
 $(TARGET) : $(BUILD)output.elf
-	$(ARMGNU)-objcopy $(BUILD)output.elf -O binary $(TARGET) 
+	$(OBJCOPY) $(BUILD)output.elf -O binary $(TARGET)
 
 # Rule to make the elf file.
 $(BUILD)output.elf : $(OBJECTS) $(LINKER)
-	$(ARMGNU)-ld --no-undefined $(OBJECTS) -Map $(MAP) -o $(BUILD)output.elf -T $(LINKER)
+	$(LINKER) --no-undefined $(OBJECTS) -Map $(MAP) -o $(BUILD)output.elf -T $(LINKER_SCRIPT)
 
 # Rule to make the object files.
 $(BUILD)%.o: $(SOURCE)%.s $(BUILD)
-	$(ARMGNU)-as -I $(SOURCE) $< -o $@
+	$(ASSEMBLER) -I $(SOURCE) $< -o $@
 
 $(BUILD):
 	mkdir $@
@@ -59,10 +67,10 @@ $(BUILD):
 .PHONY: rootfs
 rootfs: $(TARGET) $(LIST)
 	cp $(TARGET) boot/kernel.img
-	
+
 
 # Rule to clean files.
-clean : 
+clean :
 	-rm -rf $(BUILD)
 	-rm -f $(TARGET)
 	-rm -f $(LIST)

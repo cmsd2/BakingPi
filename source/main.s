@@ -10,5 +10,5 @@ _start:
     lsl r1, #15
     str r1, [r0, #32]
 
-    loop$:
-    b loop$
+loop:
+    b loop
