@@ -1,10 +1,8 @@
-.section .init
-.globl _start
-_start:
-    // gpio base address
-    ldr r0, =0x20200000
-
-    /* offsets:
+    /*
+     * gpio base address =
+     * 0x20200000
+     *
+     * offsets:
      * 0x0-0x14: gpio function select
      * 0x1c-0x20: gpio pin output set
      * 0x28-0x2c: gpio pin output clear
@@ -19,20 +17,30 @@ _start:
      * pwr (rpi b+): 35
      */
 
-    // select output function of gpio pin 47
-    mov r1, #1
-    // 7th set of 3bits (47 % 10 == 7)
-    lsl r1, #21
-    // 5th set of 4bytes ((47 / 10) * 4 == 16)
-    str r1, [r0, #16]
+.section .init
+.globl _start
+_start:
+    b main
+
+main:
+    mov sp, #0x8000
+
+    pinNum .req r0
+    pinFunc .req r1
+    mov pinNum, #47
+    mov pinFunc, #1
+    bl SetGpioFunction
+    .unreq pinNum
+    .unreq pinFunc
 
 loop:
-    // set the output for pin 47
-    mov r1, #1
-    // 47 % 32 == 15
-    lsl r1, #15
-    // (47 / 32) * 4 + 0x1c == #32
-    str r1, [r0, #32]
+    pinNum .req r0
+    pinVal .req r1
+    mov pinNum, #47
+    mov pinVal, #1
+    bl SetGpio
+    .unreq pinNum
+    .unreq pinVal
 
     mov r2, #0x3f0000
 wait1:
@@ -40,13 +48,13 @@ wait1:
     cmp r2, #0
     bne wait1
 
-
-    // clear the output for pin 47
-    mov r1, #1
-    // 47 % 32 == 15
-    lsl r1, #15
-    // (47 / 32) * 4 + 0x28 == #44
-    str r1, [r0, #44]
+    pinNum .req r0
+    pinVal .req r1
+    mov pinNum, #47
+    mov pinVal, #0
+    bl SetGpio
+    .unreq pinNum
+    .unreq pinVal
 
     mov r2, #0x3f0000
 wait2:
@@ -55,3 +63,6 @@ wait2:
     bne wait2
 
     b loop
+
+stop:
+    b stop
