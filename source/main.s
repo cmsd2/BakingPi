@@ -33,18 +33,27 @@ main:
     .unreq pinNum
     .unreq pinFunc
 
+    ptrn .req r4
+    ldr ptrn, =pattern
+    ldr ptrn, [ptrn]
+    seq .req r5
+    mov seq, #0
+
 loop:
     pinNum .req r0
     pinVal .req r1
-    mov pinNum, #47
+
     mov pinVal, #1
+    lsl pinVal, seq
+    and pinVal, ptrn
+    lsr pinVal, seq
+
+    mov pinNum, #47
     bl SetGpio
     .unreq pinNum
     .unreq pinVal
 
-//    mov r0, #1
-//    lsl r0, #22
-        //    bl _wait
+/*
     mov r0, #18
     lsl r0, #15
     bl _wait
@@ -56,12 +65,22 @@ loop:
     bl SetGpio
     .unreq pinNum
     .unreq pinVal
+*/
 
     mov r0, #18
     lsl r0, #15
     bl _wait
 
+    add seq, #1
+    cmp seq, #32
+    movge seq, #0
+
     b loop
 
 stop:
     b stop
+
+.section .data
+.align 2
+pattern:
+.int 0b11111111101010100010001000101010
