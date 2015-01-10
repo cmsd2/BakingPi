@@ -42,11 +42,12 @@ loop:
     .unreq pinNum
     .unreq pinVal
 
-    mov r2, #0x3f0000
-wait1:
-    sub r2, #1
-    cmp r2, #0
-    bne wait1
+//    mov r0, #1
+//    lsl r0, #22
+        //    bl _wait
+    mov r0, #18
+    lsl r0, #15
+    bl _wait
 
     pinNum .req r0
     pinVal .req r1
@@ -56,11 +57,9 @@ wait1:
     .unreq pinNum
     .unreq pinVal
 
-    mov r2, #0x3f0000
-wait2:
-    sub r2, #1
-    cmp r2, #0
-    bne wait2
+    mov r0, #18
+    lsl r0, #15
+    bl _wait
 
     b loop
 
